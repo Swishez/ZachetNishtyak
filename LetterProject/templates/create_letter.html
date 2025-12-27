@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Создание письма</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/docx@7.5.0/dist/docx.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+</head>
+<body style="background-color:#222; color:#fff;">
+<div class="container">
+    <h1 class="mb-4 text-center" style="color:#00ffff;">Создание письма</h1>
+    <form id="letterForm">
+        <div class="form-group">
+            <label for="addressText">Адресат:</label>
+            <textarea class="form-control" id="addressText" rows="4">Директору</textarea>
+        </div>
+        <div class="form-group">
+            <label for="ownLineText">ФИО:</label>
+            <textarea class="form-control" id="ownLineText" rows="2">Уважаемая(ый) ФИО!</textarea>
+        </div>
+        <form action="{% url 'create_letter' %}" method="get">
+            <button type="submit">Создать и скачать документ</button>
+        </form>
+        </div>
+    </form>
+</div>
+
+<script>
+async function create_letter() {
+    const addressText = document.getElementById("addressText").value.trim();
+    const ownLineText = document.getElementById("ownLineText").value.trim();
+
+    if (!addressText || !ownLineText) {
+        alert("Заполните обязательные поля!");
+        return;
+    }
+
+    const { Document, Packer, Paragraph, TextRun } = window.docx;
+
+    const doc = new Document();
+
+    doc.addParagraph(new Paragraph({
+        alignment: "center",
+        children: [
+            new TextRun(addressText),
+        ],
+    }));
+
+    doc.addParagraph("\n");
+
+    doc.addParagraph(new Paragraph({
+        alignment: "center",
+        children: [
+            new TextRun(ownLineText),
+        ],
+    }));
+
+    try {
+        const blob = await Packer.toBlob(doc);
+        saveAs(blob, "письмо.docx");
+    } catch (err) {
+        console.error(err);
+        alert("Ошибка при создании документа.");
+    }
+}
+</script>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
