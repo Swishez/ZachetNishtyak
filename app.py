@@ -4,6 +4,50 @@ from docx.enum.table import WD_ALIGN_VERTICAL
 from lxml import etree
 from docx.oxml.ns import qn
 from docx.shared import Pt
+from flask import Flask, request, render_template, send_from_directory
+import os
+import docx
+
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/generate', methods=['POST'])
+def generate():
+    address_text = request.form['address_text']
+    ownline_text = request.form['ownline_text']
+
+    # Создаем документ
+    doc = docx.Document()
+
+    # Здесь ваш код для оформления документа
+    # Например, добавляем параграфы
+    doc.add_paragraph(address_text)
+    doc.add_paragraph(ownline_text)
+
+    # Убедитесь, что папка для сохранения есть
+    folder_path = 'generated_files'
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+
+    # Имя файла
+    filename = 'оформленное_письмо.docx'
+    file_path = os.path.join(folder_path, filename)
+
+    # Сохраняем документ
+    doc.save(file_path)
+
+    # Возвращаем ссылку для скачивания
+    return render_template('download.html', filename=filename)
+
+@app.route('/download/<filename>')
+def download(filename):
+    return send_from_directory('generated_files', filename)
+
+if __name__ == '__main__':
+    app.run(debug=True)
 
 # Создаем новый документ
 doc = Document()
@@ -29,7 +73,7 @@ contact_info = [
     "ул. Пролетарская, д. 252/2",
     "Тел.:(4752) 53-53-70",
     "E-mail: tkt33@mail.ru",
-    "от 05 мая 2025г. №______",
+    "от ____________г. №______",
     "На №_________от__________"
 ]
 
@@ -50,7 +94,7 @@ cell_right._element.clear_content()
 
 cell_right.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
 
-address_text = "К директору\nМБОУ «Цнинская средняя общеобразовательная школа №2»\nС.В. Черниковой"
+address_text = "К директору\nМБОУ «название №номер»\nинициалы"
 p_right = cell_right.add_paragraph(address_text)
 p_right.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
 run_right = p_right.runs[0]
@@ -70,7 +114,7 @@ for border_name in ['top', 'left', 'bottom', 'right', 'insideH', 'insideV']:
 # Добавляем основной текст письма
 
 text_ownline = [
-    "Уважаемая Светлана Вячеславовна!"
+    "Уважаемая ФИО"
 ]
 for line in text_ownline:
     p1 = doc.add_paragraph(line)
